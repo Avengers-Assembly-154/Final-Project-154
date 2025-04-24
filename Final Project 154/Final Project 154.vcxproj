@@ -81,11 +81,11 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>D:\myStuff\Classes\compSci\Irvine</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>D:\myStuff\Classes\compSci\Irvine;C:\SourceCode\Irvine</AdditionalLibraryDirectories>
       <AdditionalDependencies>Irvine32.lib;$(CoreLibraryDependencies);%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <MASM>
-      <IncludePaths>D:\myStuff\Classes\compSci\Irvine</IncludePaths>
+      <IncludePaths>D:\myStuff\Classes\compSci\Irvine;C:\SourceCode\Irvine</IncludePaths>
     </MASM>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
