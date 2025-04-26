@@ -88,10 +88,7 @@ badInt:
 MOV EDX, OFFSET badIn
 call writeString
 SUB ECX, 1
-CMP ECX, 0 ;if we have no tires left jump to that exit point
-;I think the comp is unecessary, I don't have time to check if there's a jump
-;that'll work with the flags the sub sets
-JE tmt
+JECXZ tmt ;found a jump that avoids the cmp
 JMP read ;otherwise try and read again
 
 tmt:
@@ -102,6 +99,7 @@ jmp final
 normalExit:
 MOV EDX, OFFSET goodBye
 call writeString
+
 final:
 
 exit
