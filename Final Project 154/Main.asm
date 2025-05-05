@@ -28,6 +28,20 @@ tooManyTries BYTE "Too many tries, exiting application.", 0
 
 goodBye BYTE "Exiting program. Goodbye!", 0
 
+takeGuess BYTE "I've created a random number from 1-10. Please guess the number.", 0Ah, 0
+
+congrats BYTE "Congradulations! You guessed ", 0
+congrats2 BYTE " correctly! You won $2!", 0Ah, 0
+
+lost BYTE "Sorry, the number was ", 0
+lost2 BYTE ". Better luck next time!", 0Ah, 0
+
+playAgain BYTE "Would you like to play again?", 0Ah,
+"    1: Yes", 0Ah,
+"    2: No", 0Ah, 0Ah, 0
+
+
+
 selection DWORD 0
 guess DWORD 0
 hidden DWORD 0
@@ -72,9 +86,75 @@ JMP normalExit
 sel2:
 
 JMP normalExit
-sel3:
+sel3: 
+	;check user's balance
+	;if balance is <= 0, user can't play
+	;dec $1 from user's balance
+mov ECX, tries	;resets tries counter
 
-JMP normalExit
+mov EDX, OFFSET takeGuess
+call writeString
+call readInt	;takes integer input
+JO badGuess		;if overflow flag is set we don't have an integer
+CMP EAX, 10		;checking if guess is in range
+JG badGuess
+CMP EAX, 1
+JL badGuess
+JMP goodGuess
+
+badGuess:		;if guess is out of range
+SUB ECX, 1
+JECXZ tmt
+JMP sel3
+
+goodGuess:		;if guess is in range
+mov EBX, EAX
+
+call Randomize
+mov EAX, 10
+call RandomRange
+inc EAX
+cmp EAX, EBX
+JE win
+
+mov EDX, OFFSET lost
+call writeString
+call writeDec
+mov EDX, OFFSET lost2
+call writeString
+
+JMP repeatGame
+win:
+mov EDX, OFFSET congrats
+call writeString
+call writeDec
+mov EDX, OFFSET congrats2
+call writeString
+			;add $2 to user's account
+JMP repeatGame
+repeatGame:
+mov ECX, tries
+
+mov EDX, OFFSET playAgain	;asks if user would like to play again
+call writeString
+
+call readInt
+JO badRep
+CMP EAX, 1
+JE yesPlay
+CMP EAX, 2
+JE noPlay
+JMP badRep
+badRep:
+SUB ECX, 1
+JECXZ tmt
+mov EDX, OFFSET badIn
+call writeString
+JMP repeatGame
+yesPlay:
+JMP sel3
+noPlay:		
+JMP normalExit ;change to jump back to menu
 sel4:
 
 JMP normalExit
