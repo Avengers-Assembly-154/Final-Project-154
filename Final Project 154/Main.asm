@@ -110,6 +110,18 @@ JMP sel3
 goodGuess:		;if guess is in range
 mov EBX, EAX
 
+badInt:
+MOV EDX, OFFSET badIn
+call writeString
+SUB ECX, 1
+JECXZ tmt ;found a jump that avoids the cmp
+JMP read ;otherwise try and read again
+
+tmt:
+MOV EDX, OFFSET tooManyTries
+call writeString
+jmp final
+
 call Randomize
 mov EAX, 10
 call RandomRange
@@ -164,17 +176,7 @@ JMP normalExit
 
 
 
-badInt:
-MOV EDX, OFFSET badIn
-call writeString
-SUB ECX, 1
-JECXZ tmt ;found a jump that avoids the cmp
-JMP read ;otherwise try and read again
 
-tmt:
-MOV EDX, OFFSET tooManyTries
-call writeString
-jmp final
 
 normalExit:
 MOV EDX, OFFSET goodBye
