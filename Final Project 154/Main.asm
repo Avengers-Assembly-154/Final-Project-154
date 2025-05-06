@@ -28,6 +28,8 @@ tooManyTries BYTE "Too many tries, exiting application.", 0
 
 goodBye BYTE "Exiting program. Goodbye!", 0
 
+balanceMsg BYTE "Your available balance is: $", 0
+
 takeGuess BYTE 0Ah, "I've created a random number from 1-10. Please guess the number.", 0Ah, 0
 
 congrats BYTE "Congradulations! You guessed ", 0
@@ -109,13 +111,20 @@ jmp final
 
 ;the 1st menu item, display's the user's credits
 sel1:
+mov EDX, OFFSET balanceMsg
+call writeString
+mov EAX, balance
+call writeDec
+mov al, 0Ah
+call writeChar
+JMP read
 
-JMP normalExit
 
 ;the 2nd menu item, add credit to the user's account
 sel2:
 
 JMP normalExit
+
 
 ;the 3rd menu item, play the guessing game
 sel3: 
@@ -191,7 +200,7 @@ yesPlay:
 JMP sel3
 
 noPlay:		
-JMP normalExit ;change to jump back to menu
+JMP read;change to jump back to menu
 
 
 
