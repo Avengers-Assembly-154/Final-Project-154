@@ -51,18 +51,25 @@ hidden DWORD 0
 .code
 main proc
 
+;sets up the number of tries the user should have
 tries = 3
 MOV ECX, tries ;the ecx register holds a counter for how many tries should be allowed
 
+;put all setup code for the main loop above this label
+;the main loop, prints the menu then accepts user input
 read:
 
+;print out the main menu
 MOV EDX, OFFSET menu
 call writeString
 
+;get the user's input, if it's a valid input jump to parsing which selection
+;if it's bad process the bad input
 call readInt
 JNO goodInt ;if the overflow flag is not set we have a good integer
 JMP badInt ;otherwise we have a bad one
 
+;determine which menu item the user selected, if it's not one of the options, the input is invalid
 goodInt:
 CMP EAX, 1
 JE sel1
@@ -78,14 +85,32 @@ JE sel5
 ;if it's not one of these it's a bad input
 JMP badInt
 
+;if our input is bad, not sure this should remain here long term.
+badInt:
+MOV EDX, OFFSET badIn
+call writeString
+SUB ECX, 1
+JECXZ tmt ;found a jump that avoids the cmp
+JMP read ;otherwise try and read again
+
+;too many tries, exits the game
+tmt:
+MOV EDX, OFFSET tooManyTries
+call writeString
+jmp final
 
 
+;the 1st menu item, display's the user's credits
 sel1:
 
 JMP normalExit
+
+;the 2nd menu item, add credit to the user's account
 sel2:
 
 JMP normalExit
+
+;the 3rd menu item, play the guessing game
 sel3: 
 	;check user's balance
 	;if balance is <= 0, user can't play
@@ -102,22 +127,12 @@ CMP EAX, 1
 JL badGuess
 JMP goodGuess
 
+
 badGuess:		;if guess is out of range
 SUB ECX, 1
 JECXZ tmt
 JMP sel3
 
-badInt:
-MOV EDX, OFFSET badIn
-call writeString
-SUB ECX, 1
-JECXZ tmt ;found a jump that avoids the cmp
-JMP read ;otherwise try and read again
-
-tmt:
-MOV EDX, OFFSET tooManyTries
-call writeString
-jmp final
 
 goodGuess:		;if guess is in range
 mov EBX, EAX
@@ -144,6 +159,8 @@ call writeString
 			;add $2 to user's account
 JMP repeatGame
 
+
+
 repeatGame:
 mov ECX, tries
 mov EDX, OFFSET playAgain	;asks if user would like to play again
@@ -169,11 +186,15 @@ JMP sel3
 noPlay:		
 JMP normalExit ;change to jump back to menu
 
+
+
+;the 4th menu item, displays the user's stats
 sel4:
 
 JMP normalExit
-sel5:
 
+;the 5th menu item, exits the game
+sel5:
 JMP normalExit
 
 
