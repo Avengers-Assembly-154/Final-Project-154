@@ -42,6 +42,13 @@ playAgain BYTE 0Ah, "Would you like to play again?", 0Ah,
 
 
 
+balance DWORD 0
+MAX_ALLOWED = 20 ;maximum ammount of allowed money
+ammount DWORD 0
+correctGuesses DWORD 0
+missedGuesses DWORD 0
+name BYTE 15 dup(0), 0 ;a null terminated 15 character string
+
 selection DWORD 0
 guess DWORD 0
 hidden DWORD 0
