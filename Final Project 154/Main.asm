@@ -68,6 +68,7 @@ hidden DWORD 0
 
 
 .code
+
 main proc
 
 ;sets up the number of tries the user should have
@@ -134,7 +135,7 @@ JMP read
 sel2:
 
 mov EDX, OFFSET addMsg
-call writeSring
+call writeString
 
 call readInt
 JO badInt            ; if overflow flag is set we don't have an integer
@@ -158,7 +159,7 @@ JMP sel2
 
 ; adds the value to the balance and sends the user back to the main menu the main menu
 goodAdd:
-add EAX, balance
+call addBal
 
 mov EDX, OFFSET balanceAdd
 call writeString
@@ -185,7 +186,7 @@ JMP goodGuess
 
 badGuess:		;if guess is out of range
 SUB ECX, 1
-JECXZ tmt
+;JECXZ tmt ;currently commented out bc jump is out of range
 JMP sel3
 
 
@@ -211,7 +212,8 @@ call writeString
 call writeDec
 mov EDX, OFFSET congrats2
 call writeString
-			;add $2 to user's account
+mov EAX, 2
+call addBal
 JMP repeatGame
 
 
@@ -265,6 +267,17 @@ final:
 exit
 main endp
 
-	; insert additional procedures here
+
+addBal proc
+push ebp
+mov ebp, esp
+
+add EAX, balance
+mov balance, EAX
+
+mov esp, ebp
+pop ebp
+ret
+addBal endp
 
 end main
