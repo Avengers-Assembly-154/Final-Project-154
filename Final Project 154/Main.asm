@@ -168,9 +168,12 @@ JMP read
 
 ;the 3rd menu item, play the guessing game
 sel3: 
-	;check user's balance
-	;if balance is <= 0, user can't play
-	;dec $1 from user's balance
+mov EAX, balance
+cmp EAX, 0			;check user's balance
+;JLE someFunction ;if balance is <= 0, user can't play
+dec EAX
+mov balance, EAX
+
 mov ECX, tries	;resets tries counter
 
 mov EDX, OFFSET takeGuess
