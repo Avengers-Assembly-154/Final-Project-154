@@ -30,6 +30,16 @@ goodBye BYTE "Exiting program. Goodbye!", 0
 
 balanceMsg BYTE "Your available balance is: $", 0
 
+addMsg BYTE "Please enter the amount you would like to add: ", 0
+
+badAdd BYTE "Maximum allowable credit is $20.00", 0Ah,
+            "Please enter a different amount and try again.", 0Ah, 0
+
+badCredit BYTE "Add at least $1.00 to your account.", 0Ah,
+               "Please enter a different amount and try again.", 0Ah, 0
+
+balanceAdd BYTE "Credit has been added to your account.", 0Ah, 0
+
 takeGuess BYTE 0Ah, "I've created a random number from 1-10. Please guess the number.", 0Ah, 0
 
 congrats BYTE "Congradulations! You guessed ", 0
@@ -96,7 +106,7 @@ JMP badInt
 
 ;if our input is bad, not sure this should remain here long term.
 badInt:
-MOV EDX, OFFSET badIn
+MOV EDX, OFFSET badAdd
 call writeString
 SUB ECX, 1
 JECXZ tmt ;found a jump that avoids the cmp
@@ -123,7 +133,36 @@ JMP read
 ;the 2nd menu item, add credit to the user's account
 sel2:
 
-JMP normalExit
+mov EDX, OFFSET addMsg
+call writeSring
+
+call readInt
+JO badInt            ; if overflow flag is set we don't have an integer
+CMP EAX, MAX_ALLOWED ; checking if value is under 20
+JG badmax
+CMP EAX, 1           ; checking if value is at least 1
+JL badmin
+JMP goodAdd
+
+; if the value is higher than 20, call sel2
+badmax:
+mov EDX, OFFSET badAdd
+call writeString
+JMP sel2
+
+; if the value is lower than 1, call sel2
+badmin:
+mov EDX, OFFSET badCredit
+call writeString
+JMP sel2
+
+; adds the value to the balance and sends the user back to the main menu the main menu
+goodAdd:
+add EAX, balance
+
+mov EDX, OFFSET balanceAdd
+call writeString
+JMP read
 
 
 ;the 3rd menu item, play the guessing game
