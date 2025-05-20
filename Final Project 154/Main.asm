@@ -96,6 +96,9 @@ MOV ECX, 15
 call readstring
 call clrScr
 
+;seed the rng
+call Randomize
+
 ;sets up the number of tries the user should have
 tries = 3
 MOV ECX, tries ;the ecx register holds a counter for how many tries should be allowed
@@ -236,10 +239,8 @@ JMP sel3
 
 goodGuess:		;if guess is in range
 mov EBX, EAX
-;call Randomize
 mov EAX, 10
-;call RandomRange
-MOV EAX, 5 ;THIS NEEDS TO BE CHANGED BEFORE SHIPPING
+call RandomRange
 inc EAX
 cmp EAX, EBX
 JE win
