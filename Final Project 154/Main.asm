@@ -11,6 +11,8 @@ INCLUDE Irvine32.inc
 
 .data
 
+namePrompt BYTE "Please enter your name(15 character max): ", 0
+
 menu BYTE "*** Avengers Assembly ***", 0Ah, 0Ah, 0Ah, 0Ah,
 "*** MAIN MENU ***", 0Ah, 0Ah,
 "    1: Display my available credit", 0Ah,
@@ -70,7 +72,7 @@ MAX_ALLOWED = 20 ;maximum ammount of allowed money
 ammount DWORD 0
 correctGuesses DWORD 0
 missedGuesses DWORD 0
-name BYTE 15 dup(0), 0 ;a null terminated 15 character string
+nameString BYTE 15 dup(0), 0 ;a null terminated 15 character string
 gamesPlayed DWORD 0
 
 selection DWORD 0
@@ -83,9 +85,21 @@ hidden DWORD 0
 
 main proc
 
+;get the player's name
+;the function takes the buffer's base in edx, and the maximum length in ecx
+;the function adds one null character to the string, so ecx must be one smaller than the buffer
+
+MOV EDX, OFFSET namePrompt
+call writeString
+MOV EDX, OFFSET nameString
+MOV ECX, 15
+call readstring
+call clrScr
+
 ;sets up the number of tries the user should have
 tries = 3
 MOV ECX, tries ;the ecx register holds a counter for how many tries should be allowed
+
 
 ;put all setup code for the main loop above this label
 ;the main loop, prints the menu then accepts user input
@@ -222,9 +236,10 @@ JMP sel3
 
 goodGuess:		;if guess is in range
 mov EBX, EAX
-call Randomize
+;call Randomize
 mov EAX, 10
-call RandomRange
+;call RandomRange
+MOV EAX, 5 ;THIS NEEDS TO BE CHANGED BEFORE SHIPPING
 inc EAX
 cmp EAX, EBX
 JE win
@@ -235,10 +250,6 @@ call writeString
 call writeDec
 mov EDX, OFFSET lost2
 call writeString
-
-mov EAX, missedGuesses
-inc EAX
-mov missedGuesses, EAX
 
 JMP repeatGame
 
@@ -252,11 +263,6 @@ mov EDX, OFFSET congrats2
 call writeString
 
 mov EAX, 2
-call addBal
-
-mov EAX, correctGuesses
-inc EAX
-mov correctGuesses, EAX
 
 JMP repeatGame
 
@@ -298,11 +304,11 @@ showStats:
     call writeString
 
     ; Player Name
-    ;mov edx, OFFSET playerNameLabel
-    ;call writeString
-    ;mov edx, OFFSET name
-    ;call writeString
-    ;call crlf
+    mov edx, OFFSET playerNameLabel
+    call writeString
+    mov edx, OFFSET nameString
+    call writeString
+    call crlf
 
     ; Balance
     mov edx, OFFSET balanceLabel
@@ -343,8 +349,7 @@ showStats:
     ; Money Lost = gamesPlayed - correctGuesses
     mov edx, OFFSET moneyLostLabel
     call writeString
-    mov eax, gamesPlayed
-    sub eax, correctGuesses
+    mov eax, missedGuesses
     call writeDec
     call crlf
 JMP read
