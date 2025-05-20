@@ -26,21 +26,21 @@ badIn BYTE "Invalid character entered. Please try again.", 0Ah, 0
 
 tooManyTries BYTE "Too many tries, exiting application.", 0
 
-goodBye BYTE "Exiting program. Goodbye!", 0
+goodBye BYTE "Exiting program. Goodbye!", 0Ah, 0
 
 balanceMsg BYTE "Your available balance is: $", 0
 
 addMsg BYTE "Please enter the amount you would like to add: ", 0
 
-badAdd BYTE "Maximum allowable credit is $20.00", 0Ah,
+badAdd BYTE 0Ah, "Maximum allowable credit is $20.00", 0Ah,
             "Please enter a different amount and try again.", 0Ah, 0
 
-badCredit BYTE "Add at least $1.00 to your account.", 0Ah,
+badCredit BYTE 0Ah, "Add at least $1.00 to your account.", 0Ah,
                "Please enter a different amount and try again.", 0Ah, 0
 
 balanceAdd BYTE "Credit has been added to your account.", 0Ah, 0
 
-takeGuess BYTE 0Ah, "I've created a random number from 1-10. Please guess the number.", 0Ah, 0
+takeGuess BYTE "I've created a random number from 1-10. Please guess the number.", 0Ah, 0
 
 congrats BYTE "Congradulations! You guessed ", 0
 congrats2 BYTE " correctly! You won $2!", 0Ah, 0
@@ -280,15 +280,11 @@ JMP read
 ;the 4th menu item, displays the user's stats
 sel4:
 
-mov EAX, correctGuesses
-call writeDec
-mov EAX, missedGuesses
-call writeDec
-
 JMP read
 
 ;the 5th menu item, exits the game
 sel5:
+call Clrscr
 JMP normalExit
 
 
