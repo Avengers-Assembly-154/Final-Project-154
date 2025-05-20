@@ -13,7 +13,7 @@ INCLUDE Irvine32.inc
 
 namePrompt BYTE "Please enter your name(15 character max): ", 0
 
-menu BYTE "*** Avengers Assembly ***", 0Ah, 0Ah, 0Ah, 0Ah,
+menu BYTE "*** Avengers Assembly ***", 0Ah, 0Ah,
 "*** MAIN MENU ***", 0Ah, 0Ah,
 "    1: Display my available credit", 0Ah,
 "    2: Add credit to my account", 0Ah,
@@ -92,7 +92,7 @@ main proc
 MOV EDX, OFFSET namePrompt
 call writeString
 MOV EDX, OFFSET nameString
-MOV ECX, 15
+MOV ECX, 16
 call readstring
 call clrScr
 
@@ -136,7 +136,8 @@ JMP badInt
 
 ;if our input is bad, not sure this should remain here long term.
 badInt:
-MOV EDX, OFFSET badAdd
+call clrScr
+MOV EDX, OFFSET badIn
 call writeString
 SUB ECX, 1
 JECXZ tmt ;found a jump that avoids the cmp
@@ -241,6 +242,7 @@ goodGuess:		;if guess is in range
 mov EBX, EAX
 mov EAX, 10
 call RandomRange
+MOV EAX, 4 ;THIS IS A TESTING FEATURE, UNCOMMENTING DISABLES THE RANDOMIZATION
 inc EAX
 cmp EAX, EBX
 JE win
@@ -282,6 +284,7 @@ JE noPlay
 JMP badRep
 
 badRep:
+call clrScr
 SUB ECX, 1
 ;JECXZ tmt		;jump was out of range, took out temporarily
 mov EDX, OFFSET badIn
@@ -300,6 +303,7 @@ JMP read
 ;the 4th menu item, displays the user's stats
 sel4:
 showStats:
+    call clrScr
     ; Display header
     mov edx, OFFSET statsHeader
     call writeString
@@ -353,6 +357,8 @@ showStats:
     mov eax, missedGuesses
     call writeDec
     call crlf
+
+    call keyPress
 JMP read
 
 ;the 5th menu item, exits the game
