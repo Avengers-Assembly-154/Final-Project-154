@@ -52,6 +52,9 @@ playAgain BYTE 0Ah, "Would you like to play again?", 0Ah,
 "    1: Yes", 0Ah,
 "    2: No", 0Ah, 0Ah, 0
 
+lowBalance BYTE 0Ah, 0Ah, "Sorry, your balance is too low. Please add credit before trying to play again.", 0Ah, 0Ah, 0
+
+pressKey BYTE 0Ah, 0Ah, "Please press any key to continue.", 0
 
 
 balance DWORD 0
@@ -122,17 +125,20 @@ jmp final
 
 ;the 1st menu item, display's the user's credits
 sel1:
+call Clrscr
 mov EDX, OFFSET balanceMsg
 call writeString
 mov EAX, balance
 call writeDec
 mov al, 0Ah
 call writeChar
+call keyPress
 JMP read
 
 
 ;the 2nd menu item, add credit to the user's account
 sel2:
+call Clrscr
 
 mov EDX, OFFSET addMsg
 call writeString
@@ -149,12 +155,14 @@ JMP goodAdd
 badmax:
 mov EDX, OFFSET badAdd
 call writeString
+call keyPress
 JMP sel2
 
 ; if the value is lower than 1, call sel2
 badmin:
 mov EDX, OFFSET badCredit
 call writeString
+call keyPress
 JMP sel2
 
 ; adds the value to the balance and sends the user back to the main menu the main menu
@@ -163,19 +171,28 @@ call addBal
 
 mov EDX, OFFSET balanceAdd
 call writeString
+call keyPress
 JMP read
 
 
 ;the 3rd menu item, play the guessing game
 sel3: 
+call Clrscr
 mov EAX, balance
 cmp EAX, 0			;check user's balance
-;JLE someFunction ;if balance is <= 0, user can't play
+JLE tooLow ;if balance is <= 0, user can't play
 dec EAX
 mov balance, EAX
+JMP guessing
 
+tooLow:
+mov EDX, OFFSET lowBalance
+call writeString
+call keyPress
+JMP read
+
+guessing:
 mov ECX, tries	;resets tries counter
-
 mov EDX, OFFSET takeGuess
 call writeString
 call readInt	;takes integer input
@@ -201,11 +218,16 @@ call RandomRange
 inc EAX
 cmp EAX, EBX
 JE win
+
 mov EDX, OFFSET lost
 call writeString
 call writeDec
 mov EDX, OFFSET lost2
 call writeString
+
+mov EAX, missedGuesses
+inc EAX
+mov missedGuesses, EAX
 
 JMP repeatGame
 
@@ -215,8 +237,14 @@ call writeString
 call writeDec
 mov EDX, OFFSET congrats2
 call writeString
+
 mov EAX, 2
 call addBal
+
+mov EAX, correctGuesses
+inc EAX
+mov correctGuesses, EAX
+
 JMP repeatGame
 
 
@@ -243,15 +271,21 @@ JMP repeatGame
 yesPlay:
 JMP sel3
 
-noPlay:		
-JMP read;change to jump back to menu
+noPlay:	
+call Clrscr
+JMP read
 
 
 
 ;the 4th menu item, displays the user's stats
 sel4:
 
-JMP normalExit
+mov EAX, correctGuesses
+call writeDec
+mov EAX, missedGuesses
+call writeDec
+
+JMP read
 
 ;the 5th menu item, exits the game
 sel5:
@@ -282,5 +316,25 @@ mov esp, ebp
 pop ebp
 ret
 addBal endp
+
+keyPress proc
+push ebp
+mov ebp, esp
+
+mov edx, offset pressKey
+call writeString
+
+LookForKey:
+mov eax, 50
+call Delay
+call ReadKey
+jz LookForKey
+
+call Clrscr
+
+mov esp, ebp
+pop ebp
+ret
+keyPress endp
 
 end main
