@@ -53,6 +53,14 @@ playAgain BYTE 0Ah, "Would you like to play again?", 0Ah,
 "    2: No", 0Ah, 0Ah, 0
 
 lowBalance BYTE 0Ah, 0Ah, "Sorry, your balance is too low. Please add credit before trying to play again.", 0Ah, 0Ah, 0
+statsHeader BYTE 0Ah, "== Player Statistics ==", 0Ah, 0
+playerNameLabel BYTE "Player Name: ", 0
+balanceLabel BYTE "Current Balance: $", 0
+gamesPlayedLabel BYTE "Games Played: ", 0
+correctGuessesLabel BYTE "Correct Guesses: ", 0
+missedGuessesLabel BYTE "Missed Guesses: ", 0
+moneyWonLabel BYTE "Money Won: $", 0
+moneyLostLabel BYTE "Money Lost: $", 0
 
 pressKey BYTE 0Ah, 0Ah, "Please press any key to continue.", 0
 
@@ -63,6 +71,7 @@ ammount DWORD 0
 correctGuesses DWORD 0
 missedGuesses DWORD 0
 name BYTE 15 dup(0), 0 ;a null terminated 15 character string
+gamesPlayed DWORD 0
 
 selection DWORD 0
 guess DWORD 0
@@ -200,6 +209,7 @@ JO badInt		;if overflow flag is set we don't have an integer
 CMP EAX, 10		;checking if guess is in range
 JG badGuess
 CMP EAX, 1
+    		inc gamesPlayed
 JL badGuess
 JMP goodGuess
 
@@ -220,6 +230,7 @@ cmp EAX, EBX
 JE win
 
 mov EDX, OFFSET lost
+   inc missedGuesses
 call writeString
 call writeDec
 mov EDX, OFFSET lost2
@@ -233,6 +244,8 @@ JMP repeatGame
 
 win:
 mov EDX, OFFSET congrats
+        inc correctGuesses
+        add balance, 2
 call writeString
 call writeDec
 mov EDX, OFFSET congrats2
@@ -279,7 +292,61 @@ JMP read
 
 ;the 4th menu item, displays the user's stats
 sel4:
+showStats:
+    ; Display header
+    mov edx, OFFSET statsHeader
+    call writeString
 
+    ; Player Name
+    ;mov edx, OFFSET playerNameLabel
+    ;call writeString
+    ;mov edx, OFFSET name
+    ;call writeString
+    ;call crlf
+
+    ; Balance
+    mov edx, OFFSET balanceLabel
+    call writeString
+    mov eax, balance
+    call writeDec
+    call crlf
+
+    ; Games Played
+    mov edx, OFFSET gamesPlayedLabel
+    call writeString
+    mov eax, gamesPlayed
+    call writeDec
+    call crlf
+
+    ; Correct Guesses
+    mov edx, OFFSET correctGuessesLabel
+    call writeString
+    mov eax, correctGuesses
+    call writeDec
+    call crlf
+
+    ; Missed Guesses
+    mov edx, OFFSET missedGuessesLabel
+    call writeString
+    mov eax, missedGuesses
+    call writeDec
+    call crlf
+
+    ; Money Won = correctGuesses * 2
+    mov edx, OFFSET moneyWonLabel
+    call writeString
+    mov eax, correctGuesses
+    shl eax, 1
+    call writeDec
+    call crlf
+
+    ; Money Lost = gamesPlayed - correctGuesses
+    mov edx, OFFSET moneyLostLabel
+    call writeString
+    mov eax, gamesPlayed
+    sub eax, correctGuesses
+    call writeDec
+    call crlf
 JMP read
 
 ;the 5th menu item, exits the game
