@@ -17,7 +17,7 @@ menu BYTE "*** Avengers Assembly ***", 0Ah, 0Ah,
 "*** MAIN MENU ***", 0Ah, 0Ah,
 "    1: Display my available credit", 0Ah,
 "    2: Add credit to my account", 0Ah,
-"    3: Play the guessing game", 0Ah,
+"    3: Play the guessing game (Costs $1)", 0Ah,
 "    4: Display my statistics", 0Ah,
 "    5: To exit", 0Ah, 0Ah,
 "Please enter a selection: ", 0
@@ -242,7 +242,7 @@ goodGuess:		;if guess is in range
 mov EBX, EAX
 mov EAX, 10
 call RandomRange
-MOV EAX, 4 ;THIS IS A TESTING FEATURE, UNCOMMENTING DISABLES THE RANDOMIZATION
+;MOV EAX, 4 ;THIS IS A TESTING FEATURE, UNCOMMENTING DISABLES THE RANDOMIZATION
 inc EAX
 cmp EAX, EBX
 JE win
