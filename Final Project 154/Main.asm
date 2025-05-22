@@ -1,10 +1,11 @@
 ; ------------------------------------------------------------
-; Program Description : a program that adds two integers
-; Author:
-; Creation Date :
+; Program Description : Guessing game final project
+; Team Name: Avengers Assembly
+; Team Member Names: Michael Haydel, Katelyn McQueen, Jose Carlos, Kyle Nguyen
+; Creation Date : April - May 2025
 ; Language: IA-32 x86
 ; Assembler: Microsoft Macro Assembler (MASM)
-; Collaboration:
+; Collaboration: 
 ; ----------------------------------------------------------
 
 INCLUDE Irvine32.inc
@@ -35,10 +36,14 @@ goodBye BYTE "Exiting program. Goodbye!", 0Ah, 0
 
 balanceMsg BYTE "Your available balance is: $", 0
 
-addMsg BYTE "Please enter the amount you would like to add: ", 0
+addMsg BYTE "The maximum ammount of money you can get in your account by adding credit is $20", 0Ah,
+    "Please enter the amount you would like to add: ", 0
 
 badAdd BYTE 0Ah, "Maximum allowable credit is $20.00", 0Ah,
             "Please enter a different amount and try again.", 0Ah, 0
+
+maxBalance BYTE "The ammount you entered would exceed a $20 balance", 0Ah,
+            "Returning you to the main menu.", 0Ah, 0
 
 badCredit BYTE 0Ah, "Add at least $1.00 to your account.", 0Ah,
                "Please enter a different amount and try again.", 0Ah, 0
@@ -174,7 +179,19 @@ CMP EAX, MAX_ALLOWED ; checking if value is under 20
 JG badmax
 CMP EAX, 1           ; checking if value is at least 1
 JL badmin
+
+;here we need to check if the value of our balance would be higher than 20
+mov ebx, balance
+add ebx, eax
+cmp ebx, 20
+ja maxBal
 JMP goodAdd
+
+maxBal:
+mov edx, offset maxBalance
+call writeString
+call keypress
+JMP read
 
 ; if the value is higher than 20, call sel2
 badmax:
@@ -241,7 +258,6 @@ goodGuess:		;if guess is in range
 mov EBX, EAX
 mov EAX, 10
 call RandomRange
-;MOV EAX, 4 ;THIS IS A TESTING FEATURE, UNCOMMENTING DISABLES THE RANDOMIZATION
 inc EAX
 cmp EAX, EBX
 JE win
@@ -271,7 +287,6 @@ JMP repeatGame
 
 
 repeatGame:
-mov ECX, tries
 mov EDX, OFFSET playAgain	;asks if user would like to play again
 call writeString
 call readInt
@@ -284,7 +299,6 @@ JMP badRep
 
 badRep:
 call clrScr
-call dumpregs
 SUB ECX, 1
 cmp ecx, 0
 jne badRep2
@@ -358,6 +372,7 @@ showStats:
     mov edx, OFFSET moneyLostLabel
     call writeString
     mov eax, missedGuesses
+    add eax, correctGuesses
     call writeDec
     call crlf
 
