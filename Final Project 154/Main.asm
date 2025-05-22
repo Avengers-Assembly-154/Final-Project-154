@@ -9,6 +9,9 @@
 
 INCLUDE Irvine32.inc
 
+;protoype the exit macro so we can use it later
+ExitProcess proto, dwExitCode : dword
+
 .data
 
 namePrompt BYTE "Please enter your name(15 character max): ", 0
@@ -26,7 +29,7 @@ triesMsg BYTE "Your number of tries remaining is: ", 0
 
 badIn BYTE "Invalid character entered. Please try again.", 0Ah, 0
 
-tooManyTries BYTE "Too many tries, exiting application.", 0
+tooManyTriesString BYTE "Too many tries, exiting application.", 0
 
 goodBye BYTE "Exiting program. Goodbye!", 0Ah, 0
 
@@ -54,7 +57,7 @@ playAgain BYTE 0Ah, "Would you like to play again?", 0Ah,
 "    1: Yes", 0Ah,
 "    2: No", 0Ah, 0Ah, 0
 
-lowBalance BYTE 0Ah, 0Ah, "Sorry, your balance is too low. Please add credit before trying to play again.", 0Ah, 0Ah, 0
+lowBalance BYTE "Sorry, your balance is too low. Please add credit before trying to play again.", 0Ah, 0Ah, 0
 statsHeader BYTE 0Ah, "== Player Statistics ==", 0Ah, 0
 playerNameLabel BYTE "Player Name: ", 0
 balanceLabel BYTE "Current Balance: $", 0
@@ -140,14 +143,9 @@ call clrScr
 MOV EDX, OFFSET badIn
 call writeString
 SUB ECX, 1
-JECXZ tmt ;found a jump that avoids the cmp
-JMP read ;otherwise try and read again
-
-;too many tries, exits the game
-tmt:
-MOV EDX, OFFSET tooManyTries
-call writeString
-jmp final
+cmp ECX, 0
+jne read
+call tooManytries
 
 
 ;the 1st menu item, display's the user's credits
@@ -234,8 +232,9 @@ JMP goodGuess
 
 badGuess:		;if guess is out of range
 SUB ECX, 1
-;JECXZ tmt ;currently commented out bc jump is out of range
-JMP sel3
+cmp ecx, 0
+jne sel3
+call tooManyTries
 
 
 goodGuess:		;if guess is in range
@@ -285,8 +284,12 @@ JMP badRep
 
 badRep:
 call clrScr
+call dumpregs
 SUB ECX, 1
-;JECXZ tmt		;jump was out of range, took out temporarily
+cmp ecx, 0
+jne badRep2
+call tooManyTries
+badRep2:
 mov EDX, OFFSET badIn
 call writeString
 JMP repeatGame
@@ -380,6 +383,7 @@ exit
 main endp
 
 
+
 addBal proc
 push ebp
 mov ebp, esp
@@ -411,5 +415,14 @@ mov esp, ebp
 pop ebp
 ret
 keyPress endp
+
+
+
+tooManyTries proc
+MOV EDX, OFFSET tooManyTriesString
+call writeString
+invoke ExitProcess, 1
+tooManyTries endp
+
 
 end main
