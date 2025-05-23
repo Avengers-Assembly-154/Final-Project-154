@@ -27,7 +27,7 @@ menu BYTE "*** Avengers Assembly ***", 0Ah, 0Ah,
 "Please enter a selection: ", 0
 
 triesMsg BYTE "Your number of tries remaining is: ", 0
-badInputMsg BYTE "Invalid character entered. Please try again.", 0Ah, 0
+badInputMsg BYTE "Invalid input entered. Please try again.", 0Ah, 0
 tooManyTriesMsg BYTE "Too many tries, exiting application.", 0
 goodBye BYTE "Exiting program. Goodbye!", 0Ah, 0
 balanceMsg BYTE "Your available balance is: $", 0
@@ -38,6 +38,8 @@ maxCreditMsg BYTE 0Ah, "Maximum allowable credit is $20.00", 0Ah,
 
 balanceAdd BYTE "Credit has been added to your account.", 0Ah, 0
 takeGuess BYTE "I've created a random number from 1-10. Please guess the number.", 0Ah, 0
+
+guessRangeMsg BYTE "The number you entered is out of the valid range. Please try again.", 0Ah, 0
 
 congrats BYTE "Congradulations! You guessed ", 0
 congrats2 BYTE " correctly! You won $2!", 0Ah, 0
@@ -236,6 +238,8 @@ call readInt	;takes integer input
 JO badGuess		;if overflow flag is set we don't have an integer
 CMP EAX, 10		;checking if guess is in range
 JG badGuess
+CMP EAX, 0
+JB badGuess
 CMP EAX, 1
 inc gamesPlayed
 JL badGuess
