@@ -20,36 +20,23 @@ namePrompt BYTE "Please enter your name(15 character max): ", 0
 menu BYTE "*** Avengers Assembly ***", 0Ah, 0Ah,
 "*** MAIN MENU ***", 0Ah, 0Ah,
 "    1: Display my available credit", 0Ah,
-"    2: Add credit to my account", 0Ah,
+"    2: Add credit to my account (Max $20)", 0Ah,
 "    3: Play the guessing game (Costs $1)", 0Ah,
 "    4: Display my statistics", 0Ah,
 "    5: To exit", 0Ah, 0Ah,
 "Please enter a selection: ", 0
 
 triesMsg BYTE "Your number of tries remaining is: ", 0
-
-badIn BYTE "Invalid character entered. Please try again.", 0Ah, 0
-
-tooManyTriesString BYTE "Too many tries, exiting application.", 0
-
+badInputMsg BYTE "Invalid character entered. Please try again.", 0Ah, 0
+tooManyTriesMsg BYTE "Too many tries, exiting application.", 0
 goodBye BYTE "Exiting program. Goodbye!", 0Ah, 0
-
 balanceMsg BYTE "Your available balance is: $", 0
+addBalanceMsg BYTE "Please enter the amount you would like to add: ", 0
 
-addMsg BYTE "The maximum ammount of money you can get in your account by adding credit is $20", 0Ah,
-    "Please enter the amount you would like to add: ", 0
-
-badAdd BYTE 0Ah, "Maximum allowable credit is $20.00", 0Ah,
-            "Please enter a different amount and try again.", 0Ah, 0
-
-maxBalance BYTE "The ammount you entered would exceed a $20 balance", 0Ah,
-            "Returning you to the main menu.", 0Ah, 0
-
-badCredit BYTE 0Ah, "Add at least $1.00 to your account.", 0Ah,
-               "Please enter a different amount and try again.", 0Ah, 0
+maxCreditMsg BYTE 0Ah, "Maximum allowable credit is $20.00", 0Ah,
+		"Please enter a different amount and try again.", 0Ah, 0
 
 balanceAdd BYTE "Credit has been added to your account.", 0Ah, 0
-
 takeGuess BYTE "I've created a random number from 1-10. Please guess the number.", 0Ah, 0
 
 congrats BYTE "Congradulations! You guessed ", 0
@@ -71,7 +58,6 @@ correctGuessesLabel BYTE "Correct Guesses: ", 0
 missedGuessesLabel BYTE "Missed Guesses: ", 0
 moneyWonLabel BYTE "Money Won: $", 0
 moneyLostLabel BYTE "Money Lost: $", 0
-
 pressKey BYTE 0Ah, 0Ah, "Please press any key to continue.", 0
 
 
@@ -82,10 +68,10 @@ correctGuesses DWORD 0
 missedGuesses DWORD 0
 nameString BYTE 15 dup(0), 0 ;a null terminated 15 character string
 gamesPlayed DWORD 0
-
 selection DWORD 0
 guess DWORD 0
 hidden DWORD 0
+triesLeft DWORD 3
 
 
 
@@ -96,7 +82,6 @@ main proc
 ;get the player's name
 ;the function takes the buffer's base in edx, and the maximum length in ecx
 ;the function adds one null character to the string, so ecx must be one smaller than the buffer
-
 MOV EDX, OFFSET namePrompt
 call writeString
 MOV EDX, OFFSET nameString
@@ -108,14 +93,17 @@ call clrScr
 call Randomize
 
 ;sets up the number of tries the user should have
-tries = 3
-MOV ECX, tries ;the ecx register holds a counter for how many tries should be allowed
+TRIES_MAX = 3
+MOV triesLeft, TRIES_MAX 
+
 
 
 ;put all setup code for the main loop above this label
+
+
+
 ;the main loop, prints the menu then accepts user input
 read:
-
 ;print out the main menu
 MOV EDX, OFFSET menu
 call writeString
@@ -142,19 +130,26 @@ JE sel5
 ;if it's not one of these it's a bad input
 JMP badInt
 
-;if our input is bad, not sure this should remain here long term.
+;if our input is bad
 badInt:
 call clrScr
-MOV EDX, OFFSET badIn
+MOV EDX, OFFSET badInputMsg
 call writeString
-SUB ECX, 1
-cmp ECX, 0
+MOV EDX, OFFSET triesMsg
+call writeString
+SUB triesLeft, 1
+mov eax, triesLeft
+call writeDec
+call crlf
+cmp triesLeft, 0
 jne read
 call tooManytries
 
 
+
 ;the 1st menu item, display's the user's credits
 sel1:
+MOV triesLeft, TRIES_MAX 
 call Clrscr
 mov EDX, OFFSET balanceMsg
 call writeString
@@ -166,19 +161,15 @@ call keyPress
 JMP read
 
 
+
 ;the 2nd menu item, add credit to the user's account
 sel2:
+MOV triesLeft, TRIES_MAX 
 call Clrscr
-
-mov EDX, OFFSET addMsg
+mov EDX, OFFSET addBalanceMsg
 call writeString
-
 call readInt
 JO badInt            ; if overflow flag is set we don't have an integer
-CMP EAX, MAX_ALLOWED ; checking if value is under 20
-JG badmax
-CMP EAX, 1           ; checking if value is at least 1
-JL badmin
 
 ;here we need to check if the value of our balance would be higher than 20
 mov ebx, balance
@@ -188,37 +179,24 @@ ja maxBal
 JMP goodAdd
 
 maxBal:
-mov edx, offset maxBalance
+mov edx, offset maxCreditMsg
 call writeString
 call keypress
-JMP read
-
-; if the value is higher than 20, call sel2
-badmax:
-mov EDX, OFFSET badAdd
-call writeString
-call keyPress
-JMP sel2
-
-; if the value is lower than 1, call sel2
-badmin:
-mov EDX, OFFSET badCredit
-call writeString
-call keyPress
 JMP sel2
 
 ; adds the value to the balance and sends the user back to the main menu the main menu
 goodAdd:
-call addBal
-
+mov balance, ebx
 mov EDX, OFFSET balanceAdd
 call writeString
 call keyPress
 JMP read
 
 
+
 ;the 3rd menu item, play the guessing game
 sel3: 
+MOV triesLeft, TRIES_MAX 
 call Clrscr
 mov EAX, balance
 cmp EAX, 0			;check user's balance
@@ -234,7 +212,7 @@ call keyPress
 JMP read
 
 guessing:
-mov ECX, tries	;resets tries counter
+mov triesLeft, TRIES_MAX ;resets tries counter
 mov EDX, OFFSET takeGuess
 call writeString
 call readInt	;takes integer input
@@ -242,17 +220,15 @@ JO badInt		;if overflow flag is set we don't have an integer
 CMP EAX, 10		;checking if guess is in range
 JG badGuess
 CMP EAX, 1
-    		inc gamesPlayed
+inc gamesPlayed
 JL badGuess
 JMP goodGuess
 
-
 badGuess:		;if guess is out of range
-SUB ECX, 1
-cmp ecx, 0
+SUB triesLeft, 1
+cmp triesLeft, 0
 jne sel3
 call tooManyTries
-
 
 goodGuess:		;if guess is in range
 mov EBX, EAX
@@ -263,28 +239,23 @@ cmp EAX, EBX
 JE win
 
 mov EDX, OFFSET lost
-   inc missedGuesses
+inc missedGuesses
 call writeString
 call writeDec
 mov EDX, OFFSET lost2
 call writeString
-
 JMP repeatGame
 
 win:
 mov EDX, OFFSET congrats
-        inc correctGuesses
-        add balance, 2
+inc correctGuesses
+add balance, 2
 call writeString
 call writeDec
 mov EDX, OFFSET congrats2
 call writeString
-
 mov EAX, 2
-
 JMP repeatGame
-
-
 
 repeatGame:
 mov EDX, OFFSET playAgain	;asks if user would like to play again
@@ -299,13 +270,18 @@ JMP badRep
 
 badRep:
 call clrScr
-SUB ECX, 1
-cmp ecx, 0
-jne badRep2
+SUB triesLeft, 1
+cmp triesLeft, 0
+jne badRepInternal ;this is a bad naming convention, I don't know that I care to fix it
 call tooManyTries
-badRep2:
-mov EDX, OFFSET badIn
+badRepInternal:
+mov EDX, OFFSET badInputMsg
 call writeString
+MOV EDX, OFFSET triesMsg
+call writeString
+MOV EAX, triesLeft
+call writeDec
+call crlf
 JMP repeatGame
 
 yesPlay:
@@ -319,97 +295,79 @@ JMP read
 
 ;the 4th menu item, displays the user's stats
 sel4:
+MOV triesLeft, TRIES_MAX 
 showStats:
-    call clrScr
-    ; Display header
-    mov edx, OFFSET statsHeader
-    call writeString
+call clrScr
 
-    ; Player Name
-    mov edx, OFFSET playerNameLabel
-    call writeString
-    mov edx, OFFSET nameString
-    call writeString
-    call crlf
+; Display header
+mov edx, OFFSET statsHeader
+call writeString
 
-    ; Balance
-    mov edx, OFFSET balanceLabel
-    call writeString
-    mov eax, balance
-    call writeDec
-    call crlf
+; Player Name
+mov edx, OFFSET playerNameLabel
+call writeString
+mov edx, OFFSET nameString
+call writeString
+call crlf
 
-    ; Games Played
-    mov edx, OFFSET gamesPlayedLabel
-    call writeString
-    mov eax, gamesPlayed
-    call writeDec
-    call crlf
+; Balance
+mov edx, OFFSET balanceLabel
+call writeString
+mov eax, balance
+call writeDec
+call crlf
 
-    ; Correct Guesses
-    mov edx, OFFSET correctGuessesLabel
-    call writeString
-    mov eax, correctGuesses
-    call writeDec
-    call crlf
+; Games Played
+mov edx, OFFSET gamesPlayedLabel
+call writeString
+mov eax, gamesPlayed
+call writeDec
+call crlf
 
-    ; Missed Guesses
-    mov edx, OFFSET missedGuessesLabel
-    call writeString
-    mov eax, missedGuesses
-    call writeDec
-    call crlf
+; Correct Guesses
+mov edx, OFFSET correctGuessesLabel
+call writeString
+mov eax, correctGuesses
+call writeDec
+call crlf
 
-    ; Money Won = correctGuesses * 2
-    mov edx, OFFSET moneyWonLabel
-    call writeString
-    mov eax, correctGuesses
-    shl eax, 1
-    call writeDec
-    call crlf
+; Missed Guesses
+mov edx, OFFSET missedGuessesLabel
+call writeString
+mov eax, missedGuesses
+call writeDec
+call crlf
 
-    ; Money Lost = gamesPlayed - correctGuesses
-    mov edx, OFFSET moneyLostLabel
-    call writeString
-    mov eax, missedGuesses
-    add eax, correctGuesses
-    call writeDec
-    call crlf
+; Money Won = correctGuesses * 2
+mov edx, OFFSET moneyWonLabel
+call writeString
+mov eax, correctGuesses
+shl eax, 1
+call writeDec
+call crlf
 
-    call keyPress
+; Money Lost = gamesPlayed - correctGuesses
+mov edx, OFFSET moneyLostLabel
+call writeString
+mov eax, missedGuesses
+add eax, correctGuesses
+call writeDec
+call crlf
+call keyPress
 JMP read
+
+
 
 ;the 5th menu item, exits the game
 sel5:
 call Clrscr
-JMP normalExit
-
-
-
-
-
-normalExit:
 MOV EDX, OFFSET goodBye
 call writeString
-
-final:
 
 exit
 main endp
 
 
-
-addBal proc
-push ebp
-mov ebp, esp
-
-add EAX, balance
-mov balance, EAX
-
-mov esp, ebp
-pop ebp
-ret
-addBal endp
 
 keyPress proc
 push ebp
@@ -423,7 +381,6 @@ mov eax, 50
 call Delay
 call ReadKey
 jz LookForKey
-
 call Clrscr
 
 mov esp, ebp
@@ -433,11 +390,13 @@ keyPress endp
 
 
 
+
 tooManyTries proc
-MOV EDX, OFFSET tooManyTriesString
+MOV EDX, OFFSET tooManyTriesMsg
 call writeString
 invoke ExitProcess, 1
 tooManyTries endp
+
 
 
 end main
