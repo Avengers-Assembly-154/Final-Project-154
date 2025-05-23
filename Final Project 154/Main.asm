@@ -166,10 +166,12 @@ JMP read
 sel2:
 MOV triesLeft, TRIES_MAX 
 call Clrscr
+
+adding:
 mov EDX, OFFSET addBalanceMsg
 call writeString
 call readInt
-JO badInt            ; if overflow flag is set we don't have an integer
+JO nintAdd            ; if overflow flag is set we don't have an integer
 
 ;here we need to check if the value of our balance would be higher than 20
 mov ebx, balance
@@ -178,11 +180,26 @@ cmp ebx, 20
 ja maxBal
 JMP goodAdd
 
+nintAdd:
+call clrscr
+SUB triesLeft, 1
+mov EDX, OFFSET badInputMsg
+call writeString
+mov EDX, OFFSET triesMsg
+call writeString
+mov EAX, triesLeft
+call writeDec
+call crlf
+cmp triesLeft, 0
+jne adding
+call tooManyTries
+
+
 maxBal:
 mov edx, offset maxCreditMsg
 call writeString
 call keypress
-JMP sel2
+JMP adding
 
 ; adds the value to the balance and sends the user back to the main menu the main menu
 goodAdd:
@@ -212,11 +229,11 @@ call keyPress
 JMP read
 
 guessing:
-mov triesLeft, TRIES_MAX ;resets tries counter
+;mov triesLeft, TRIES_MAX ;resets tries counter
 mov EDX, OFFSET takeGuess
 call writeString
 call readInt	;takes integer input
-JO badInt		;if overflow flag is set we don't have an integer
+JO badGuess		;if overflow flag is set we don't have an integer
 CMP EAX, 10		;checking if guess is in range
 JG badGuess
 CMP EAX, 1
@@ -225,9 +242,17 @@ JL badGuess
 JMP goodGuess
 
 badGuess:		;if guess is out of range
+call clrscr
 SUB triesLeft, 1
+mov EDX, OFFSET badInputMsg
+call writeString
+mov EDX, OFFSET triesMsg
+call writeString
+mov EAX, triesLeft
+call writeDec
+call crlf
 cmp triesLeft, 0
-jne sel3
+jne guessing
 call tooManyTries
 
 goodGuess:		;if guess is in range
