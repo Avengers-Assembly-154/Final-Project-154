@@ -52,6 +52,7 @@ playAgain BYTE 0Ah, "Would you like to play again?", 0Ah,
 "    2: No", 0Ah, 0Ah, 0
 
 lowBalance BYTE "Sorry, your balance is too low. Please add credit before trying to play again.", 0Ah, 0Ah, 0
+highBalance BYTE "You already have at least $20! You can't add any more credit right now.", 0Ah, 0
 statsHeader BYTE 0Ah, "== Player Statistics ==", 0Ah, 0
 playerNameLabel BYTE "Player Name: ", 0
 balanceLabel BYTE "Current Balance: $", 0
@@ -169,6 +170,16 @@ sel2:
 MOV triesLeft, TRIES_MAX 
 call Clrscr
 
+MOV EBX, balance
+CMP EBX, 20
+JL adding
+
+MOV EDX, OFFSET highBalance
+call writeString
+call keyPress
+JMP read
+
+
 adding:
 mov EDX, OFFSET addBalanceMsg
 call writeString
@@ -235,20 +246,32 @@ guessing:
 mov EDX, OFFSET takeGuess
 call writeString
 call readInt	;takes integer input
-JO badGuess		;if overflow flag is set we don't have an integer
+JO nintGuess		;if overflow flag is set we don't have an integer
 CMP EAX, 10		;checking if guess is in range
 JG badGuess
-CMP EAX, 0
-JB badGuess
 CMP EAX, 1
-inc gamesPlayed
 JL badGuess
+inc gamesPlayed
 JMP goodGuess
+
+nintGuess:
+call clrscr
+SUB triesLeft, 1
+mov EDX, OFFSET badInputMsg
+call writeString
+mov EDX, OFFSET triesMsg
+call writeString
+mov EAX, triesLeft
+call writeDec
+call crlf
+cmp triesLeft, 0
+jne guessing
+call tooManyTries
 
 badGuess:		;if guess is out of range
 call clrscr
 SUB triesLeft, 1
-mov EDX, OFFSET badInputMsg
+mov EDX, OFFSET guessRangeMsg
 call writeString
 mov EDX, OFFSET triesMsg
 call writeString
